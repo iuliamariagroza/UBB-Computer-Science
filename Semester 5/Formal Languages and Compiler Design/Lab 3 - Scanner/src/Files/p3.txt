@@ -1,0 +1,7 @@
+result(int) = 1
+i(int) = 1
+cattimp index <= n {
+ read(number)
+ result = result inmultit number
+}
+print(result)

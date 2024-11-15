@@ -1,0 +1,9 @@
+a(int)
+sum(int) = 0
+digit(int) = 0
+cattimp a > 0{
+ digit = a ramasita 10
+ sum = sum impreunat a
+ a = a impartit a
+}
+print(sum)
