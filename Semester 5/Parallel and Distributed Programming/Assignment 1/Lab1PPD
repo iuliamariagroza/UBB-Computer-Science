@@ -1,0 +1,18 @@
+Documentation
+
+1.Supermarket inventory
+
+Product mutex (productMutex): Each Product object has a ReentrantLock. This mutex allows distinct threads to access and operate on distinct products without having to wait for one another.
+
+Price Checker mutex (priceCheckerLock): This is used to ensure that only one thread can produce a bill and access and modify variables like the profit (which is the sum of money from all the bills) and that during the checking of the inventory, no thread is modifying the quantity of some products or the final profit.
+Synchronized methods:  The getBillsProfit, getSoldQuantity, and getRemainingQuantity methods in SalesTransactionService are synchronized to ensure that only one thread at a time can access them.
+
+Tests
+Processor: Apple M3
+OS: macOS Sonoma 14.6
+- for 3.000 products, 1 thread: 0.012000 s
+- for 3.000 products, 50 threads: 0.035000 s
+- for 3.000 products, 500 threads: 0.097000 s
+- for 3.000 products, 1000 threads: 0.215000 s	
+- for 3.000 products, 3000 threads: 0.530000 s
+
