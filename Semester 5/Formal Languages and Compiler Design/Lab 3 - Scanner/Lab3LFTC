@@ -1,0 +1,18 @@
+Documentation
+
+https://github.com/cs-ubbcluj-ro/lab-work-computer-science-2024-iuliamariagroza/tree/main/3-Parser
+
+The LexicalAnalyzer class is responsible for performing lexical analysis on a source code file written in a custom programming language. It reads the source code, identifies tokens (keywords, identifiers, constants, operators, and delimiters), and constructs a Program Internal Form (PIF) and a Symbol Table (ST). The class outputs lexical errors encountered during the analysis and only indicates that the code is "Lexically correct" if no errors are found.
+
+Operations:
+   - LexicalAnalyzer() -> Constructor that initializes the LexicalAnalyzer instance, setting up the symbol table, PIF, and reading valid tokens from a predefined file 
+   - void setProgram(String program) -> Sets the source code to be analyzed by the lexical analyzer
+   - void readTokens() -> Reads valid tokens from the Tokens.in file and populates the tokens and reservedWords lists for use during analysis
+   - void skipSpaces() -> Advances the index past whitespace characters in the source code to facilitate token recognition
+   - boolean treatIntConstant() -> Attempts to identify an integer constant at the current index. If found, it adds the constant to the symbol table and updates the PIF. Returns true if an integer constant is recognized, false otherwise
+   - boolean treatStringConstant() -> Attempts to identify a string constant at the current index. If found, it adds the string to the symbol table and updates the PIF. Throws an exception for improperly formatted strings. Returns true if a string constant is recognized, false otherwise
+   - boolean checkIfValid(String possibleIdentifier, String programSubstring) -> Checks whether a given identifier is valid (not a reserved word and conforms to naming conventions) within the context of the source code. Returns true if valid, false otherwise
+   - boolean treatIdentifier() -> Attempts to identify an identifier at the current index. If found, it adds the identifier to the symbol table and updates the PIF. Returns true if an identifier is recognized, false otherwise
+  - boolean treatFromTokenList() -> Checks if the current substring matches any reserved keywords or tokens from the token list. If a match is found, it updates the PIF accordingly. Returns true if a token is recognized, false otherwise
+   - void nextToken() -> Progresses through the source code, calling appropriate methods to identify the next token. Reports lexical errors if invalid tokens or formats are encountered and increments the lexicalErrorCount
+   - void scan(String programFileName) -> Reads the source code from a specified file, processes the tokens, and generates the PIF and ST. Outputs any lexical errors encountered during analysis. If no errors are found, it outputs "Lexically correct." Return Values
