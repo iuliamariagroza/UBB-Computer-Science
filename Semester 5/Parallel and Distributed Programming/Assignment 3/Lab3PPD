@@ -1,0 +1,27 @@
+Documentation Lab3 PPD
+
+//8 threads, matrix size 2500
+Kth | Time: 0.0608s | 8 threads
+Kth | Time: 0.0597s | 8 threads with pool 
+
+//16 threads, matrix size 2500
+Kth | Time: 0.0618s | 16 threads
+Kth | Time: 0.0545s | 16 threads with pool 
+
+//35 threads, matrix size 2500
+Kth | Time: 0.0634s | 35 threads
+Kth | Time: 0.0555s | 35 threads with pool 
+
+
+//100 threads, matrix size 1000000
+Kth | Time: 0.325s | 100 threads
+Kth | Time: 0.306s | 100 threads with pool 
+
+//250 threads, matrix size 1000000
+Kth | Time: 0.339s | 250 threads
+Kth | Time: 0.330s | 250 threads with pool 
+
+//500 threads, matrix size 1000000
+Kth | Time: 0.359s | 500 threads
+Kth | Time: 0.378s | 500 threads with pool 
+
