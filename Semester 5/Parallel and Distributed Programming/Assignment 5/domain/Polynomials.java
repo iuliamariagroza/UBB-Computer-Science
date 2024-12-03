@@ -17,7 +17,6 @@ public class Polynomials {
 
         for(int i=0;i<degree;i++){
             polynomialCoefficients.add(seed.nextInt(10));
-//            polynomialCoefficients.add(1);
         }
         polynomialCoefficients.add(seed.nextInt(10));
     }
@@ -104,21 +103,21 @@ public class Polynomials {
             if(coefficient == 0){
                 continue;
             }
-            if(!result.isEmpty()){//if the result already contains something, we need to add + or -
-                result.append(coefficient > 0 ? "+" : "-");//if the coeff>0, we add +, else we add -
+            if(!result.isEmpty()){
+                result.append(coefficient > 0 ? "+" : "-");
             }else if(coefficient < 0){
-                result.append("-");//if this is the first term and coeff<0, we add - first
+                result.append("-");
             }
-            int absCoefficient = Math.abs(coefficient); //take the absolute value to ensure the coeff are all positive
+            int absCoefficient = Math.abs(coefficient);
 
-            if (absCoefficient != 1 || i == 0) {//if coeff is not 1 or is a constant term, we add it to the result
-                result.append(absCoefficient); // Append the coefficient (skip 1 for non-constant terms)
+            if (absCoefficient != 1 || i == 0) {
+                result.append(absCoefficient); 
             }
 
-            if (i > 0) {//if its not the constant term
-                result.append("x"); // Append the variable
+            if (i > 0) {
+                result.append("x"); 
                 if (i > 1) {
-                    result.append("^").append(i); // Append the power if greater than 1
+                    result.append("^").append(i); 
                 }
             }
         }
