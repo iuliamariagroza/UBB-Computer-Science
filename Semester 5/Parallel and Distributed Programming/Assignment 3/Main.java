@@ -10,43 +10,44 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
 public class Main {
-    private static final int rowCounta = 1000;
-    private static final int colCounta = 1000;
-    private static final int rowCountb = 1000;
-    private static final int colCountb = 1000;
-    private static final int threadCount = 20;
+    private static final int rowCountMatrixA = 1000;
+    private static final int columnCountMatrixA = 1000;
+    private static final int rowCountMatrixB = 1000;
+    private static final int columnCountMatrixB = 1000;
+    private static final int threadCount = 100;
 
-/// each task computes consecutive elements, going row after row
     public static RowThread initializeRow(int index, Matrix a, Matrix b, Matrix c, int threadCount) {
-        //index = the index of the thread being created
-        int finalMatrixSize = c.rowCount * c.columnCount; //total number of elements of the c matrix
-        int elementCount = finalMatrixSize / threadCount; //number of elements each thread deals with
+        int finalMatrixSize = c.rowCount * c.columnCount;
+        int elementCount = finalMatrixSize / threadCount;
 
         int startRow = elementCount * index / c.columnCount;
-        int startCol = elementCount * index % c.columnCount;
+        int startColumn = elementCount * index % c.columnCount;
 
-        if(index == threadCount - 1){
+        if (index == threadCount - 1) {
             elementCount += finalMatrixSize % threadCount;
-            // the last thread takes the remaining elements that did not fit in previous operations
         }
 
-        return new RowThread(a,b,c,startRow, startCol, elementCount);
+        return new RowThread(startRow, startColumn, elementCount, a, b, c);
     }
 
-    public static void rowMultiplication(Matrix a, Matrix b, Matrix c) {
-        float start = System.nanoTime();
-        runRowThreadPerTask(a,b,c);
-        runRowThreadPool(a,b,c);
+    public static void rowMultiplication(Matrix a, Matrix b, Matrix c, long[] times) {
+        long start = System.nanoTime();
+        runRowThreadPerTask(a, b, c);
+        times[0] = System.nanoTime() - start;
 
-        System.out.println("Time elapsed:" + ((System.nanoTime() - start) / 1_000_000_000.0 + "seconds"));
+        start = System.nanoTime();
+        runRowThreadPool(a, b, c);
+        times[1] = System.nanoTime() - start;
     }
+
 
     public static void runRowThreadPerTask(Matrix a, Matrix b, Matrix c) {
         List<Thread> threads = new ArrayList<>();
 
-        for(int i = 0; i < threadCount; i++){
-            threads.add(initializeRow(i,a,b,c,threadCount));
+        for (int i = 0; i < threadCount; i++) {
+            threads.add(initializeRow(i, a, b, c, threadCount));
         }
+
         for (Thread thread : threads) {
             thread.start();
         }
@@ -63,57 +64,56 @@ public class Main {
     }
 
     public static void runRowThreadPool(Matrix a, Matrix b, Matrix c) {
-        //a fixed thread pool reuses a limited number of threads for executing tasks
-        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        ExecutorService service = Executors.newFixedThreadPool(threadCount);
 
-        for(int i = 0;i < threadCount; i++){
-            executor.submit(initializeRow(i,a,b,c,threadCount));
-            //the submit queues the task for execution, The thread pool will manage which thread executes the task, allowing
-            // for concurrent execution without the need for the user to handle the threading explicitly
+        for (int i = 0; i < threadCount; i++) {
+            service.submit(initializeRow(i, a, b, c, threadCount));
         }
-        executor.shutdown();
-        try{
-            if(!executor.awaitTermination(300, TimeUnit.SECONDS)){//wait until all tasks have completed execution after a shutdown request
-                executor.shutdownNow();
+
+        service.shutdown();
+        try {
+            if (!service.awaitTermination(300, TimeUnit.SECONDS)) {
+                service.shutdownNow();//forces tasks that did not complete execution to stop after reaching the 300 seconds limit
             }
-            System.out.println("Row:\n" + c);
-        }catch(InterruptedException e){
-            executor.shutdownNow();
-            e.printStackTrace();
+            System.out.println("Row:\n" + c.toString());
+        } catch (InterruptedException ex) {
+            service.shutdownNow();
+            ex.printStackTrace();
             Thread.currentThread().interrupt();
         }
     }
-    /// each task computes consecutive elements, going column by column
 
     public static ColumnThread initializeColumn(int index, Matrix a, Matrix b, Matrix c, int threadCount) {
-        int finalMatrixSize2 = c.rowCount * c.columnCount;
-        int elementCount = finalMatrixSize2 / threadCount; //number of elements each thread deals with
+        int finalMatrixSize = c.rowCount * c.columnCount;
+        int elementCount = finalMatrixSize / threadCount;
 
-        int startRow = elementCount * index / c.columnCount;
-        int startCol = elementCount * index % c.columnCount;
+        int startRow = elementCount * index % c.rowCount;
+        int startColumn = elementCount * index / c.rowCount;
 
-        if(index == threadCount - 1){
-            elementCount += finalMatrixSize2 % threadCount;
-            // the last thread takes the remaining elements that did not fit in previous operations
+        if (index == threadCount - 1) {
+            elementCount += finalMatrixSize % threadCount;
         }
 
-        return new ColumnThread(a,b,c,startRow, startCol, elementCount);
+        return new ColumnThread(startRow, startColumn, elementCount, a, b, c);
     }
 
-    public static void colMultiplication(Matrix a, Matrix b, Matrix c) {
-        float start = System.nanoTime();
-        runColThreadPerTask(a,b,c);
-        runColThreadPool(a,b,c);
+    public static void columnMultiplication(Matrix a, Matrix b, Matrix c, long[] times) {
+        long start = System.nanoTime();
+        runColumnThreadPerTask(a, b, c);
+        times[0] = System.nanoTime() - start;
 
-        System.out.println("Time elapsed:" + ((System.nanoTime() - start) / 1_000_000_000.0 + "seconds"));
+        start = System.nanoTime();
+        runColumnThreadPool(a, b, c);
+        times[1] = System.nanoTime() - start;
     }
 
-    public static void runColThreadPerTask(Matrix a, Matrix b, Matrix c) {
+    public static void runColumnThreadPerTask(Matrix a, Matrix b, Matrix c) {
         List<Thread> threads = new ArrayList<>();
 
-        for(int i = 0; i < threadCount; i++){
-            threads.add(initializeColumn(i,a,b,c,threadCount));
+        for (int i = 0; i < threadCount; i++) {
+            threads.add(initializeColumn(i, a, b, c, threadCount));
         }
+
         for (Thread thread : threads) {
             thread.start();
         }
@@ -126,59 +126,61 @@ public class Main {
             }
         }
 
-        System.out.println("Column:\n" + c);
+        System.out.println("Column: \n" + c);
     }
 
-    public static void runColThreadPool(Matrix a, Matrix b, Matrix c) {
-        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+    public static void runColumnThreadPool(Matrix a, Matrix b, Matrix c) {
+        ExecutorService service = Executors.newFixedThreadPool(threadCount);
 
-        for(int i = 0;i < threadCount; i++){
-            executor.submit(initializeColumn(i,a,b,c,threadCount));
+        for (int i = 0; i < threadCount; i++) {
+            service.submit(initializeColumn(i, a, b, c, threadCount));
         }
 
-        executor.shutdown();
-        try{
-            if(!executor.awaitTermination(300, TimeUnit.SECONDS)){
-                executor.shutdownNow();
+        service.shutdown();
+        try {
+            if (!service.awaitTermination(300, TimeUnit.SECONDS)) {
+                service.shutdownNow();
             }
-            System.out.println("Column :\n" + c);
-        }catch(InterruptedException e){
-            executor.shutdownNow();
-            e.printStackTrace();
+            System.out.println("Column :\n" + c.toString());
+        } catch (InterruptedException ex) {
+            service.shutdownNow();
+            ex.printStackTrace();
             Thread.currentThread().interrupt();
         }
     }
-
-    /// each task takes every k-th element(k=number of tasks), going row by row
 
     public static KThread initializeKThread(int index, Matrix a, Matrix b, Matrix c, int threadCount) {
         int finalMatrixSize = c.rowCount * c.columnCount;
         int elementCount = finalMatrixSize / threadCount;
 
-        if(index < finalMatrixSize % threadCount){
+        if (index < finalMatrixSize % threadCount) {
             elementCount++;
         }
 
         int startRow = index / c.columnCount;
-        int startCol = index % c.columnCount;
+        int startColumn = index % c.columnCount;
 
-        return new KThread(a,b,c,startRow, startCol, elementCount, threadCount);
+        return new KThread(startRow, startColumn, elementCount, threadCount, a, b, c);
     }
 
-    public static void kTask(Matrix a, Matrix b, Matrix c) {
-        float start = System.nanoTime();
-        runKThreadPerTask(a,b,c);
-        runKThreadPool(a,b,c);
+    public static void kTask(Matrix a, Matrix b, Matrix c, long[] times) {
+        long start = System.nanoTime();
+        runKhreadPerTask(a, b, c);
+        times[0] = System.nanoTime() - start;
 
-        System.out.println("Time elapsed: " + (System.nanoTime() - start) / 1_000_000_000.0 + " seconds");
+        start = System.nanoTime();
+        runKThreadPool(a, b, c);
+        times[1] = System.nanoTime() - start;
     }
 
-    public static void runKThreadPerTask(Matrix a, Matrix b, Matrix c) {
+
+    public static void runKhreadPerTask(Matrix a, Matrix b, Matrix c) {
         List<Thread> threads = new ArrayList<>();
 
-        for(int i = 0; i < threadCount; i++){
-            threads.add(initializeKThread(i,a,b,c,threadCount));
+        for (int i = 0; i < threadCount; i++) {
+            threads.add(initializeKThread(i, a, b, c, threadCount));
         }
+
         for (Thread thread : threads) {
             thread.start();
         }
@@ -195,39 +197,50 @@ public class Main {
     }
 
     public static void runKThreadPool(Matrix a, Matrix b, Matrix c) {
-        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+        ExecutorService service = Executors.newFixedThreadPool(threadCount);
 
-        for(int i = 0;i < threadCount; i++){
-            executor.submit(initializeKThread(i,a,b,c,threadCount));
+        for (int i = 0; i < threadCount; i++) {
+            service.submit(initializeKThread(i, a, b, c, threadCount));
         }
 
-        executor.shutdown();
-        try{
-            if(!executor.awaitTermination(300, TimeUnit.SECONDS)){
-                executor.shutdownNow();
+        service.shutdown();
+        try {
+            if (!service.awaitTermination(300, TimeUnit.SECONDS)) {
+                service.shutdownNow();
             }
-            System.out.println("Thread Pool K-th element:\n" + c);
-        }catch(InterruptedException e){
-            executor.shutdownNow();
-            e.printStackTrace();
+            System.out.println("Thread Pool K-th element:\n" + c.toString());
+        } catch (InterruptedException ex) {
+            service.shutdownNow();
+            ex.printStackTrace();
             Thread.currentThread().interrupt();
         }
     }
 
-    public static void main(String[] args) {
-        Matrix a = new Matrix(rowCounta, colCounta,1);
-        Matrix b = new Matrix(rowCountb, colCountb,0);
+public static void main(String[] args) {
+    Matrix a = new Matrix(rowCountMatrixA, columnCountMatrixA, 1);
+    Matrix b = new Matrix(rowCountMatrixB, columnCountMatrixB, 0);
 
-        System.out.println("Matrix A:\n" + a);
-        System.out.println("Matrix B:\n" + b);
+    System.out.println(a);
+    System.out.println(b);
 
-        if(colCounta == rowCountb){
-            Matrix c = new Matrix(rowCounta, colCountb,1);
-//            rowMultiplication(a, b, c);
-//            colMultiplication(a, b, c);
-            kTask(a,b,c);
-        }else{
-            System.err.println("Impossible to multiply matrices");
-        }
+    if (columnCountMatrixA == rowCountMatrixB) {
+        Matrix c = new Matrix(rowCountMatrixA, columnCountMatrixB, 1);
+
+        long[] rowTimes = new long[2];
+        long[] columnTimes = new long[2];
+        long[] kTimes = new long[2];
+
+        rowMultiplication(a, b, c, rowTimes);
+        columnMultiplication(a, b, c, columnTimes);
+        kTask(a, b, c, kTimes);
+
+        System.out.println("Execution times (in seconds):");
+        System.out.printf("Row - Threads: %.4f, Thread Pool: %.4f%n", rowTimes[0] / 1_000_000_000.0, rowTimes[1] / 1_000_000_000.0);
+        System.out.printf("Column - Threads: %.4f, Thread Pool: %.4f%n", columnTimes[0] / 1_000_000_000.0, columnTimes[1] / 1_000_000_000.0);
+        System.out.printf("KTask - Threads: %.4f, Thread Pool: %.4f%n", kTimes[0] / 1_000_000_000.0, kTimes[1] / 1_000_000_000.0);
+    } else {
+        System.err.println("Impossible to multiply matrices");
     }
+}
+
 }
