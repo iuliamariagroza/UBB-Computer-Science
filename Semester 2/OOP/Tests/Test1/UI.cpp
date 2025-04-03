@@ -41,6 +41,7 @@ void UI::printMenu() {
     std::cout<<"Menu:\n";
     std::cout<<"1. Display all patients\n";
     std::cout<<"2.Add a patient\n";
+    std::cout<<"3.Display sorted patients based on players\n";
     std::cout<<"3.Exit\n";
 }
 
@@ -68,10 +69,10 @@ void UI::start() {
                 addAPatient();
                 break;
             case 3:
-                return;
-            case 4:
                 displaySortedPatients();
                 break;
+            case 4:
+                return;
             default:
                 std::cout<<"Invalid input. Try again!";
 
