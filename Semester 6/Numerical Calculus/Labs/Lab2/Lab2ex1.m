@@ -20,5 +20,3 @@ fplot(p4,[-3,3])
 %ex1 b
 vpa(exp(1),7)
 vpa(subs(p4,x,1),7)
-
-%ex2
